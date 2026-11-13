@@ -109,6 +109,15 @@
     const statusEl = document.getElementById("status");
     const resultado = document.getElementById("resultado");
 
+    function mostrarAviso(msg) {
+      statusEl.textContent = "";
+      resultado.innerHTML =
+        '<div style="display:flex;gap:.7rem;align-items:flex-start;' +
+        'background:#fff8e6;border:1px solid #f0d998;border-radius:10px;padding:1rem 1.2rem;">' +
+        '<span style="font-size:1.3rem;line-height:1;">⚠️</span>' +
+        '<p style="margin:0;color:#7a5c12;">' + msg + '</p></div>';
+    }
+
     async function pesquisar() {
       const company = input.value.trim();
       if (!company) { input.focus(); return; }
@@ -123,14 +132,35 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ company })
         });
-        if (!resp.ok) throw new Error("Erro HTTP " + resp.status);
+
+        if (!resp.ok) {
+          let msg;
+          if (resp.status === 500 || resp.status === 429 || resp.status === 503) {
+            msg = "O serviço de pesquisa está temporariamente indisponível, " +
+                  "provavelmente por limite de uso da IA no momento. " +
+                  "Aguarde alguns instantes e tente novamente.";
+          } else if (resp.status === 404) {
+            msg = "Não foi possível encontrar o serviço de pesquisa. " +
+                  "Verifique se o agente está ativo.";
+          } else {
+            msg = "Ocorreu um problema ao realizar a pesquisa (código " +
+                  resp.status + "). Tente novamente em instantes.";
+          }
+          mostrarAviso(msg);
+          return;
+        }
+
         const data = await resp.json();
-        const texto = data.answer || data.output || JSON.stringify(data, null, 2);
+        const texto = data.answer || data.output;
+        if (!texto) {
+          mostrarAviso("A pesquisa não retornou um resultado. Tente novamente.");
+          return;
+        }
         resultado.innerHTML = marked.parse(texto);
         statusEl.textContent = "";
       } catch (e) {
-        statusEl.textContent = "";
-        resultado.innerHTML = "<p style='color:#b00'>Não foi possível concluir a pesquisa: " + e.message + "</p>";
+        mostrarAviso("Não foi possível conectar ao serviço de pesquisa. " +
+                     "Verifique sua conexão e tente novamente em instantes.");
       } finally {
         btn.disabled = false;
       }
