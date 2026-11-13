@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pesquisa de Empresas · Agente de IA</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --verde: #2e9e5b;
+      --verde-escuro: #1f6b3e;
+      --bg: #f4f7f5;
+      --card: #ffffff;
+      --texto: #1c2b22;
+      --borda: #d9e4dd;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--texto);
+      line-height: 1.6;
+    }
+    header {
+      background: linear-gradient(135deg, var(--verde) 0%, var(--verde-escuro) 100%);
+      color: #fff;
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+    header h1 { margin: 0 0 .3rem; font-size: 1.6rem; }
+    header p { margin: 0; opacity: .9; font-size: .95rem; }
+    main {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .busca {
+      display: flex;
+      gap: .6rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .busca input {
+      flex: 1;
+      min-width: 220px;
+      padding: .8rem 1rem;
+      border: 1px solid var(--borda);
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    .busca button {
+      padding: .8rem 1.4rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--verde);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .busca button:disabled { opacity: .6; cursor: not-allowed; }
+    #status { font-size: .9rem; color: #5a6b60; margin-bottom: 1rem; min-height: 1.2em; }
+    #resultado {
+      background: var(--card);
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+      padding: 1.5rem 1.8rem;
+      min-height: 80px;
+    }
+    #resultado:empty::before {
+      content: "O resultado da pesquisa aparecerá aqui.";
+      color: #9aa89f;
+    }
+    #resultado h2 { color: var(--verde-escuro); border-bottom: 2px solid var(--borda); padding-bottom: .3rem; }
+    #resultado a { color: var(--verde-escuro); word-break: break-all; }
+    .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid #cfe3d6; border-top-color: var(--verde);
+      border-radius: 50%; animation: girar .8s linear infinite; vertical-align: middle;
+    }
+    @keyframes girar { to { transform: rotate(360deg); } }
+    footer { text-align: center; padding: 1.5rem; font-size: .8rem; color: #8a988e; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🔎 Pesquisa de Empresas com Agente de IA</h1>
+    <p>Tópicos Avançados · IFSul Gravataí</p>
+  </header>
+
+  <main>
+    <div class="busca">
+      <input id="empresa" type="text" placeholder="Digite o nome de uma empresa (ex.: Nubank)" />
+      <button id="btn">Pesquisar</button>
+    </div>
+    <div id="status"></div>
+    <div id="resultado"></div>
+  </main>
+
+  <footer>Agente em n8n + Gemini + SerpAPI</footer>
+
+  <script>
+    // URL do webhook de PRODUÇÃO do n8n:
+    const WEBHOOK_URL = "https://brunoosio.app.n8n.cloud/webhook/pesquisa-empresa";
+
+    const input = document.getElementById("empresa");
+    const btn = document.getElementById("btn");
+    const statusEl = document.getElementById("status");
+    const resultado = document.getElementById("resultado");
+
+    async function pesquisar() {
+      const company = input.value.trim();
+      if (!company) { input.focus(); return; }
+
+      btn.disabled = true;
+      resultado.innerHTML = "";
+      statusEl.innerHTML = '<span class="spinner"></span> Pesquisando "' + company + '"... (pode levar alguns segundos)';
+
+      try {
+        const resp = await fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ company })
+        });
+        if (!resp.ok) throw new Error("Erro HTTP " + resp.status);
+        const data = await resp.json();
+        const texto = data.answer || data.output || JSON.stringify(data, null, 2);
+        resultado.innerHTML = marked.parse(texto);
+        statusEl.textContent = "";
+      } catch (e) {
+        statusEl.textContent = "";
+        resultado.innerHTML = "<p style='color:#b00'>Não foi possível concluir a pesquisa: " + e.message + "</p>";
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    btn.addEventListener("click", pesquisar);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") pesquisar(); });
+  </script>
+</body>
+</html>
