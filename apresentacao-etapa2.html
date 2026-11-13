@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agente de IA · Pesquisa de Empresas — Etapa 2</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/white.css" id="theme" />
+  <style>
+    :root {
+      --verde: #2e9e5b;
+      --verde-escuro: #1f6b3e;
+    }
+    .reveal { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 30px; }
+    .reveal h1, .reveal h2, .reveal h3 { color: var(--verde-escuro); text-transform: none; font-weight: 700; }
+    .reveal h1 { font-size: 2.1em; }
+    .reveal h2 { font-size: 1.5em; }
+    .reveal section.capa { text-align: left; }
+    .reveal section.capa h1 { color: #fff; }
+    .capa { background: linear-gradient(135deg, var(--verde) 0%, var(--verde-escuro) 100%); color: #fff; }
+    .capa .sub { font-size: 1.1em; opacity: .95; }
+    .capa .autor { margin-top: 1.5em; font-size: .8em; opacity: .9; }
+    .reveal ul { display: block; }
+    .reveal li { margin-bottom: .45em; line-height: 1.35; }
+    .reveal .tag {
+      display: inline-block; background: var(--verde); color: #fff;
+      padding: .12em .6em; border-radius: 6px; font-size: .6em; font-weight: 600;
+      vertical-align: middle; margin-left: .3em;
+    }
+    .reveal .fluxo {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      background: #f3f8f4; border: 1px solid #d9e4dd; border-radius: 10px;
+      padding: .8em 1em; font-size: .62em; line-height: 1.7; color: #1c2b22; text-align: left;
+    }
+    .reveal .cols { display: flex; gap: 1.2em; align-items: flex-start; }
+    .reveal .cols > div { flex: 1; }
+    .reveal .card {
+      background: #f7faf8; border: 1px solid #d9e4dd; border-radius: 10px;
+      padding: .7em .9em; font-size: .72em; text-align: left;
+    }
+    .reveal .problema { color: #b5572a; font-weight: 600; }
+    .reveal .solucao { color: var(--verde-escuro); font-weight: 600; }
+    .reveal small { color: #5a6b60; }
+    .reveal .rodape { position: absolute; bottom: 12px; left: 20px; font-size: 14px; color: #9aa89f; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- 1. CAPA -->
+      <section class="capa" data-background-gradient="linear-gradient(135deg, #2e9e5b 0%, #1f6b3e 100%)">
+        <h1>Agente de IA para Pesquisa de Empresas</h1>
+        <p class="sub">Etapa 2 — Experiência de Desenvolvimento</p>
+        <p class="autor">
+          Tópicos Avançados · IFSul Câmpus Gravataí · 2026<br/>
+          <strong>Bruno Osio</strong>
+        </p>
+      </section>
+
+      <!-- 2. OBJETIVO -->
+      <section>
+        <h2>O que foi construído</h2>
+        <p>Um agente de IA que, a partir do <strong>nome de uma empresa</strong>, pesquisa na web e devolve um relatório estruturado — em <strong>uma única interação</strong>.</p>
+        <ul>
+          <li>Identificação e atuação</li>
+          <li>Produtos e serviços</li>
+          <li>Mercado de atuação</li>
+          <li>Concorrentes diretos</li>
+          <li>Diferencial</li>
+        </ul>
+        <p><small>+ Fontes consultadas e indicação de informações não encontradas.</small></p>
+      </section>
+
+      <!-- 3. ARQUITETURA -->
+      <section>
+        <h2>Arquitetura da solução</h2>
+        <img src="workflow-n8n.png" alt="Workflow do agente no n8n: Webhook → AI Agent (Gemini + SerpAPI) → Respond to Webhook"
+             style="max-height:420px; width:auto; border:1px solid #d9e4dd; border-radius:10px; background:#fff;" />
+        <p><small>Workflow no n8n: Webhook recebe o nome → AI Agent (Gemini + SerpAPI) pesquisa → Respond devolve o resultado. As chaves ficam no n8n, nunca no navegador.</small></p>
+      </section>
+
+      <!-- 4. FERRAMENTAS -->
+      <section>
+        <h2>Ferramentas e escolhas</h2>
+        <ul>
+          <li><strong>n8n.cloud</strong> <span class="tag">agente</span> — recomendado, montagem visual e webhook pronto, sem deploy de servidor.</li>
+          <li><strong>Google Gemini Flash</strong> <span class="tag">modelo</span> — Camada gratuita de IA.</li>
+          <li><strong>SerpAPI</strong> <span class="tag">busca web</span> — resultados do Google, integra como ferramenta do AI Agent.</li>
+          <li><strong>GitHub Pages</strong> <span class="tag">interface</span> — hospedagem estática gratuita para a página de busca.</li>
+        </ul>
+      </section>
+
+      <!-- 5. INSTRUÇÕES -->
+      <section>
+        <h2>Instruções do agente</h2>
+        <ul>
+          <li><strong>5 seções fixas</strong> e obrigatórias, sempre na mesma ordem.</li>
+          <li><strong>Uso obrigatório da busca</strong> — não responder só com conhecimento interno.</li>
+          <li><strong>Nunca inventar</strong> — faltando dado, escreve "Informação não encontrada nas fontes consultadas".</li>
+          <li><strong>Resposta única</strong> — sem pedir confirmação ao usuário.</li>
+          <li><strong>Nome ambíguo</strong> → escolhe a empresa mais relevante e declara qual assumiu.</li>
+          <li><strong>Empresa inexistente</strong> → informa e encerra.</li>
+        </ul>
+      </section>
+
+      <!-- 6. INTEGRAÇÃO -->
+      <section>
+        <h2>Integração com o sistema</h2>
+        <div class="cols">
+          <div class="card">
+            <strong>Envio</strong><br/>
+            A página faz <code>POST { company }</code> no webhook do n8n.
+          </div>
+          <div class="card">
+            <strong>Resposta</strong><br/>
+            O n8n devolve <code>{ answer: "...markdown..." }</code> e a página renderiza com marked.js.
+          </div>
+        </div>
+        <p style="margin-top:.8em;"><span class="problema">Desafio:</span> erro de <strong>CORS</strong> ao chamar o webhook do navegador.</p>
+        <p><span class="solucao">Solução:</span> liberar origens no nó Webhook + header <code>Access-Control-Allow-Origin</code> na resposta.</p>
+      </section>
+
+      <!-- 7. DESAFIOS -->
+      <section>
+        <h2>Desafios e soluções</h2>
+        <ul>
+          <li><span class="problema">Cota gratuita do Gemini apertada</span> (5 req/min, 20 req/dia) → <span class="solucao">modo econômico</span> no prompt (máx. 2–3 buscas) + <span class="solucao">retry automático</span>.</li>
+          <li><span class="problema">Erro 500 cru na tela</span> → <span class="solucao">mensagem amigável</span> no frontend e no workflow.</li>
+          <li><span class="problema">CORS</span> ao integrar página × webhook → <span class="solucao">liberação de origens + headers</span>.</li>
+          <li><span class="problema">Agente respondia sem buscar / sem fontes</span> → <span class="solucao">reforço no prompt</span> e seção "Fontes" obrigatória.</li>
+        </ul>
+      </section>
+
+      <!-- 8. APOIO DA IA -->
+      <section>
+        <h2>Apoio da IA no desenvolvimento</h2>
+        <div class="cols">
+          <div>
+            <h3 style="font-size:1em;">A IA sugeriu</h3>
+            <div class="card">
+              Estrutura do prompt do agente, o JSON do workflow n8n, o HTML da página e o tratamento de erros.
+            </div>
+          </div>
+          <div>
+            <h3 style="font-size:1em;">Eu decidi e verifiquei</h3>
+            <div class="card">
+              Escolha das ferramentas, testes com empresas reais, ajuste das instruções após ver respostas ruins, diagnóstico da cota e conferência das fontes.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. RESULTADO -->
+      <section>
+        <h2>Resultado</h2>
+        <p>Pesquisa real executada pela própria página, retornando as 5 seções e as fontes.</p>
+        <p><small>(inserir aqui um print da pesquisa de uma empresa — ex.: Nubank)</small></p>
+        <div class="fluxo">
+          ## 1. Identificação e atuação<br/>
+          ## 2. Produtos e serviços<br/>
+          ## 3. Mercado de atuação<br/>
+          ## 4. Concorrentes diretos<br/>
+          ## 5. Diferencial<br/>
+          ## Fontes
+        </div>
+      </section>
+
+      <!-- 10. ENCERRAMENTO -->
+      <section>
+        <h2>Aprendizados e melhorias</h2>
+        <ul>
+          <li>Agentes multiplicam chamadas ao modelo → atenção a <strong>custo e cota</strong>.</li>
+          <li>Integração estática + webhook funciona bem, mas exige cuidado com <strong>CORS e segredos</strong>.</li>
+          <li>Próximos passos: <strong>cache</strong> de empresas já pesquisadas, mais fontes e histórico de buscas.</li>
+        </ul>
+        <p style="margin-top:1em;"><strong>Obrigado!</strong></p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: "c/t",
+      transition: "slide"
+    });
+  </script>
+</body>
+</html>
